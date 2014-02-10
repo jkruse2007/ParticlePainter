@@ -23,6 +23,7 @@ public class Emitter2D {
     private PVector initialParticleVelocity;
     private PVector initialParticleAcceleration;
     private collisionMode boundaryCollisionMode;
+    private Number particleLifetime; // in seconds - particle will live forever if this is null
 
     Emitter2D(PApplet p){
         parent = p;
@@ -44,7 +45,9 @@ public class Emitter2D {
         int numParticles = 1;
         for (int i=0; i<numParticles; i++){
             // initialize a new particle...
-            Particle2D particle = new Particle2D(this, parent);
+            Particle2D particle = new Particle2D(parent);
+
+            particle.setLifetime(getParticleLifetime());
             particle.setBoundaryCollisionMode(getBoundaryCollisionMode());
 
             particle.position = getInitialParticlePosition();
@@ -114,4 +117,13 @@ public class Emitter2D {
     public void setInitialParticleAcceleration(PVector initialParticleAcceleration) {
         this.initialParticleAcceleration = initialParticleAcceleration;
     }
+
+    public Number getParticleLifetime() {
+        return particleLifetime;
+    }
+
+    public void setParticleLifetime(Number particleLifetime) {
+        this.particleLifetime = particleLifetime.floatValue();
+    }
+
 }

@@ -11,9 +11,10 @@ enum collisionMode {NONE,BOUNCE,STICKY,DIE}
 public class Particle2D {
 
     private PApplet parent;
-    private Emitter2D emitter;
-    private int age;
+    private Number lifetime; //lifetime of the particle in seconds - particle will live forever if this is null
     private collisionMode boundaryCollisionMode;
+
+    private int age;
     private float sizeX = 10;
     private float sizeY = 10;
 
@@ -25,18 +26,20 @@ public class Particle2D {
 
 
 
-    Particle2D(Emitter2D e, PApplet p){
+    Particle2D(PApplet p){
         parent = p;
-        emitter = e;
         position = new PVector(0f,0f);
         velocity = new PVector(0f,0f);
         acceleration = new PVector(0f,0f);
         age = 0;
-        setBoundaryCollisionMode(emitter.getBoundaryCollisionMode());
     }
 
 
     public void update(){
+        if (getLifetime() != null){
+            if (age > (int)(getLifetime().floatValue() * parent.frameRate)) isAlive=false;
+        }
+
         if (isAlive){
             checkBoundary();
             velocity.add(acceleration);
@@ -100,15 +103,30 @@ public class Particle2D {
 
     private void drawShape(){
         parent.noStroke();
-        parent.fill(0);
+        parent.fill(0,0,0);
+        if (getLifetime() != null)
+            parent.fill(0,0,0,(parent.map((getLifetime().floatValue() - age / parent.frameRate),
+                    0, getLifetime().floatValue(),
+                    0, 255)));
+
         parent.ellipse(position.x, position.y, sizeX, sizeY);
     }
 
-    public Emitter2D getEmitter() {
-        return emitter;
-    }
 
     public void setBoundaryCollisionMode(collisionMode boundaryCollisionMode) {
         this.boundaryCollisionMode = boundaryCollisionMode;
+    }
+
+    private collisionMode getBoundaryCollisionMode() {
+        if (boundaryCollisionMode == null) return collisionMode.DIE;
+        return this.boundaryCollisionMode;
+    }
+
+    public void setLifetime(Number lifetime) {
+        this.lifetime = lifetime;
+    }
+
+    public Number getLifetime() {
+        return lifetime;
     }
 }
