@@ -12,18 +12,23 @@ import java.util.ListIterator;
 
 public class Emitter2D {
 
+    // emitter attributes
     private PApplet parent;
     private ArrayList<Particle2D> particles = new ArrayList<Particle2D>();
-
     public PVector emitterPosition;
     public boolean showEmitter;
 
-    // initial per particle attributes
+    private int currentFrame;
+    private Number emissionRate; // particles per second
+
+    // particle attributes
     private PVector initialParticlePosition;
     private PVector initialParticleVelocity;
     private PVector initialParticleAcceleration;
     private collisionMode boundaryCollisionMode;
     private Number particleLifetime; // in seconds - particle will live forever if this is null
+
+
 
     Emitter2D(PApplet p){
         parent = p;
@@ -42,7 +47,17 @@ public class Emitter2D {
 
 
     public void addNewParticlesToArray(){
-        int numParticles = 1;
+        int numParticles = 0;
+        int fr = (int)parent.frameRate;
+        float particlesPerFrame = getEmissionRate().floatValue() / fr;
+
+        if (particlesPerFrame < 1){
+            int n = PApplet.round(1 / particlesPerFrame);
+            if (currentFrame % n == 0) numParticles = 1;
+        }
+        else numParticles = PApplet.round(particlesPerFrame);
+
+
         for (int i=0; i<numParticles; i++){
             // initialize a new particle...
             Particle2D particle = new Particle2D(parent);
@@ -71,6 +86,7 @@ public class Emitter2D {
         addNewParticlesToArray();
         for (Particle2D particle: this.particles) particle.update();
         removeDeadParticles();
+        currentFrame++;
     }
 
     public void removeDeadParticles() {
@@ -126,4 +142,12 @@ public class Emitter2D {
         this.particleLifetime = particleLifetime.floatValue();
     }
 
+    public Number getEmissionRate() {
+        if(emissionRate == null) return parent.frameRate;
+        return emissionRate;
+    }
+
+    public void setEmissionRate(Number emissionRate) {
+        this.emissionRate = emissionRate;
+    }
 }

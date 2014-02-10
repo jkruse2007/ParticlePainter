@@ -55,7 +55,7 @@ public class Particle2D {
 
     private void checkBoundary(){
 
-        switch (boundaryCollisionMode){
+        switch (getBoundaryCollisionMode()){
 
             case NONE:
                 if (position.x > parent.width) position.x = 0;
@@ -103,9 +103,9 @@ public class Particle2D {
 
     private void drawShape(){
         parent.noStroke();
-        parent.fill(0,0,0);
+        parent.fill(0, 0, 0);
         if (getLifetime() != null)
-            parent.fill(0,0,0,(parent.map((getLifetime().floatValue() - age / parent.frameRate),
+            parent.fill(0, 0, 0, (PApplet.map((getLifetime().floatValue() - age / parent.frameRate),
                     0, getLifetime().floatValue(),
                     0, 255)));
 
