@@ -14,7 +14,7 @@ public class Emitter2D {
 
     // emitter attributes
     private PApplet parent;
-    private ArrayList<Particle2D> particles = new ArrayList<Particle2D>();
+    private ArrayList<Particle2D> particles;
     public PVector emitterPosition;
     public boolean showEmitter;
 
@@ -25,6 +25,7 @@ public class Emitter2D {
     private PVector initialParticlePosition;
     private PVector initialParticleVelocity;
     private PVector initialParticleAcceleration;
+    private PVector initialParticleSize;
     private collisionMode boundaryCollisionMode;
     private Number particleLifetime; // in seconds - particle will live forever if this is null
 
@@ -33,20 +34,13 @@ public class Emitter2D {
     Emitter2D(PApplet p){
         parent = p;
         showEmitter = true;
-        emitterPosition = new PVector(0f,0f);
-    }
-
-    public collisionMode getBoundaryCollisionMode() {
-        if (boundaryCollisionMode != null) return boundaryCollisionMode;
-        else return collisionMode.DIE;
-    }
-
-    public void setBoundaryCollisionMode(collisionMode boundaryCollisionMode) {
-        this.boundaryCollisionMode = boundaryCollisionMode;
+        emitterPosition = new PVector(parent.width/2,parent.height/2);
+        particles = new ArrayList<Particle2D>();
     }
 
 
-    public void addNewParticlesToArray(){
+
+    public void populateArray(){
         int numParticles = 0;
         int fr = (int)parent.frameRate;
         float particlesPerFrame = getEmissionRate().floatValue() / fr;
@@ -62,9 +56,9 @@ public class Emitter2D {
             // initialize a new particle...
             Particle2D particle = new Particle2D(parent);
 
-            particle.setLifetime(getParticleLifetime());
-            particle.setBoundaryCollisionMode(getBoundaryCollisionMode());
-
+            particle.lifetime = getParticleLifetime();
+            particle.boundaryCollisionMode = getBoundaryCollisionMode();
+            particle.size = getInitialParticleSize();
             particle.position = getInitialParticlePosition();
             particle.velocity = getInitialParticleVelocity();
             particle.acceleration = getInitialParticleAcceleration();
@@ -79,11 +73,11 @@ public class Emitter2D {
     public void drawEmitterShape(){
         parent.stroke(127);
         parent.noFill();
-        parent.ellipse(this.emitterPosition.x, this.emitterPosition.y, 20, 20);
+        parent.ellipse(this.emitterPosition.x, this.emitterPosition.y, 25, 25);
     }
 
     public void update(){
-        addNewParticlesToArray();
+        populateArray();
         for (Particle2D particle: this.particles) particle.update();
         removeDeadParticles();
         currentFrame++;
@@ -149,5 +143,23 @@ public class Emitter2D {
 
     public void setEmissionRate(Number emissionRate) {
         this.emissionRate = emissionRate;
+    }
+
+    public collisionMode getBoundaryCollisionMode() {
+        if (boundaryCollisionMode != null) return boundaryCollisionMode;
+        else return collisionMode.DIE;
+    }
+
+    public void setBoundaryCollisionMode(collisionMode boundaryCollisionMode) {
+        this.boundaryCollisionMode = boundaryCollisionMode;
+    }
+
+    public void setInitialParticleSize(float x, float y) {
+        this.initialParticleSize = new PVector(x, y);
+    }
+
+    private PVector getInitialParticleSize() {
+        if (initialParticleSize == null) initialParticleSize = new PVector(1,1);
+        return initialParticleSize;
     }
 }

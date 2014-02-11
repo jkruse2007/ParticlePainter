@@ -18,8 +18,9 @@ public class MainWindow extends PApplet {
         frameRate(24);
         size(500, 500);
         //emitter.setBoundaryCollisionMode(collisionMode.STICKY);
-        emitter.setParticleLifetime(1);
-        emitter.setEmissionRate(3);
+        //emitter.setParticleLifetime(3);
+        //emitter.setEmissionRate(3);
+        //emitter.setInitialParticleSize(10,10);
     }
 
 
