@@ -7,30 +7,31 @@ import processing.core.PApplet;
  */
 
 
-
-
 public class MainWindow extends PApplet {
 
 //    public static void main(String args[]){
 //        PApplet.main(new String[] {"--present", "ParticleSystem.MainWindow"});
 //    }
 
-    Emitter2D emitter = new Emitter2D(this);
+    private Emitter2D emitter;
 
     public void setup(){
         frameRate(24);
         size(500, 500);
+        emitter = new Emitter2D(this);
+
         //emitter.setBoundaryCollisionMode(ParticleSystem.collisionMode.STICKY);
         emitter.setParticleLifetime(3);
-        //emitter.setEmissionRate(3);
+        emitter.setEmissionRate(1);
         emitter.setInitialParticleSize(10,10);
+        emitter.showEmitter = true;
     }
 
 
     public void draw(){
         background(255);
-        emitter.emitterPosition.x = mouseX;
-        emitter.emitterPosition.y = mouseY;
+        //emitter.emitterPosition.x = mouseX;
+        //emitter.emitterPosition.y = mouseY;
 
         emitter.update();
         emitter.draw();
