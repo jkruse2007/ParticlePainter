@@ -19,20 +19,18 @@ public class MainWindow extends PApplet {
         frameRate(24);
         size(500, 500);
         emitter = new Emitter2D(this);
+        emitter.showEmitter = true;
 
-        //emitter.setBoundaryCollisionMode(ParticleSystem.collisionMode.STICKY);
         emitter.setParticleLifetime(3);
         emitter.setEmissionRate(1);
         emitter.setInitialParticleSize(10,10);
-        emitter.showEmitter = true;
+        emitter.setBoundaryCollisionMode(ParticleSystem.collisionMode.STICKY);
     }
 
 
     public void draw(){
         background(255);
-        //emitter.emitterPosition.x = mouseX;
-        //emitter.emitterPosition.y = mouseY;
-
+        emitter.setEmitterPosition(mouseX, mouseY);
         emitter.update();
         emitter.draw();
     }

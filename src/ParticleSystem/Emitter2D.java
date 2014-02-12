@@ -26,16 +26,17 @@ enum collisionMode {NONE,WRAP,BOUNCE,STICKY,DIE}
 /**
  * A Particle emitter class
  */
-public class Emitter2D {
+class Emitter2D {
 
     // emitter attributes
-    private PApplet parent;
+    private static PApplet parent;
     private ArrayList<Particle2D> particles;
-    public PVector emitterPosition;
-    public boolean showEmitter;
-
     private int currentFrame;
     private float emissionRate; // particles per second
+    private PVector emitterPosition;
+
+    public boolean showEmitter;
+
 
     // particle attributes
     private PVector initialParticlePosition;
@@ -88,10 +89,10 @@ public class Emitter2D {
 
 
 
-    public void drawEmitterShape(){
+    void drawEmitterShape(){
         parent.stroke(127);
         parent.noFill();
-        parent.ellipse(emitterPosition.x, emitterPosition.y, 25, 25);
+        parent.ellipse(getEmitterPosition().x, getEmitterPosition().y, 25, 25);
     }
 
     /** Update the particle system's state */
@@ -115,7 +116,7 @@ public class Emitter2D {
     }
 
     private PVector getInitialParticlePosition() {
-        if (initialParticlePosition == null) return emitterPosition.get();
+        if (initialParticlePosition == null) return getEmitterPosition();
         return initialParticlePosition;
     }
 
@@ -171,10 +172,11 @@ public class Emitter2D {
     /**
      * Return the number of emitted particles per second
      * or the parent's frame rate if emissionRate is undefined
-     * @return {@link ParticleSystem.Emitter2D#emissionRate}
+     * @return float {@link ParticleSystem.Emitter2D#emissionRate}
+     * <br></br>or the parent's frameRate
      * @see processing.core.PApplet#frameRate
      */
-    public float getEmissionRate() {
+    float getEmissionRate() {
         if(emissionRate >= 0) return emissionRate;
         else return parent.frameRate;
     }
@@ -196,7 +198,8 @@ public class Emitter2D {
 
     /**
      * Set the mode for collisions with the edge of the frame.
-     * @param boundaryCollisionMode  {@link ParticleSystem.collisionMode}
+     * @param boundaryCollisionMode  the {@link ParticleSystem.collisionMode}
+     *                               to be applied
      */
     public void setBoundaryCollisionMode(collisionMode boundaryCollisionMode) {
         this.boundaryCollisionMode = boundaryCollisionMode;
@@ -214,5 +217,23 @@ public class Emitter2D {
     private PVector getInitialParticleSize() {
         if (initialParticleSize == null) initialParticleSize = new PVector(1,1);
         return initialParticleSize;
+    }
+
+    /**
+     * Returns a <b>copy</b> of the emitter's current position vector.
+     * @return  position vector
+     */
+    public PVector getEmitterPosition() {
+        return emitterPosition.get();
+    }
+
+    /**
+     * Set the emitter's position
+     * @param x horizontal position in pixels
+     * @param y vertical position in pixels
+     */
+    public void setEmitterPosition(int x, int y) {
+        this.emitterPosition.x = x;
+        this.emitterPosition.y = y;
     }
 }
