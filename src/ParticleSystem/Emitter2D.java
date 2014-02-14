@@ -33,12 +33,16 @@ class Emitter2D {
     private ArrayList<Particle2D> particles;
     private int currentFrame;
     private float emissionRate; // particles per second
+    private PVector emissionDirection;
+    private float emissionSpeed;
+    private float emissionAngle;
+    private float emissionSpread;
     private PVector emitterPosition;
 
     public boolean showEmitter;
 
 
-    // particle attributes
+    // per particle attributes
     private PVector initialParticlePosition;
     private PVector initialParticleVelocity;
     private PVector initialParticleAcceleration;
@@ -47,12 +51,11 @@ class Emitter2D {
     private float particleLifetime; // in seconds - particle will live forever if this is null
 
 
-
     Emitter2D(PApplet p){
         parent = p;
+        particles = new ArrayList<Particle2D>();
         showEmitter = false;
         emitterPosition = new PVector(parent.width/2,parent.height/2);
-        particles = new ArrayList<Particle2D>();
     }
 
 
@@ -78,9 +81,10 @@ class Emitter2D {
             particle.setLifetime(getParticleLifetime());
             particle.boundaryCollisionMode = getBoundaryCollisionMode();
             particle.size = getInitialParticleSize();
-            particle.position = getInitialParticlePosition();
-            particle.velocity = getInitialParticleVelocity();
-            particle.acceleration = getInitialParticleAcceleration();
+
+            particle.position = getInitialParticlePosition().get();
+            particle.velocity = getInitialParticleVelocity().get();
+            particle.acceleration = getInitialParticleAcceleration().get();
 
             //...and add it to the array
             particles.add(particle);
@@ -121,42 +125,28 @@ class Emitter2D {
     }
 
 
-    public void setInitialParticlePosition(PVector initialParticlePosition) {
+    private void setInitialParticlePosition(PVector initialParticlePosition) {
             this.initialParticlePosition = initialParticlePosition;
     }
 
-    /**
-     * Returns a <b>copy</b> of the initial particle velocity vector, or
-     * a new PVector(0,0) if initialParticleVelocity == null
-     * @return  velocity vector
-     */
     private PVector getInitialParticleVelocity() {
-        if (initialParticleVelocity == null) return new PVector(0f,0f);
-        return initialParticleVelocity.get();
+            PVector vel;
+            vel = getEmissionDirection();
+            vel.setMag(getEmissionSpeed());
+            initialParticleVelocity = vel;
+            return initialParticleVelocity;
     }
 
-    public void setInitialParticleVelocity(PVector initialParticleVelocity) {
-        this.initialParticleVelocity = initialParticleVelocity;
-    }
 
-    //@todo
-    /**
-     * Stub implementation
-     *  @return a random {@link processing.core.PVector} of magnitude 0.1
-     */
     private PVector getInitialParticleAcceleration() {
         if (initialParticleAcceleration == null){
-            // add some random acceleration for now...
-            PVector acc = PVector.random2D();
-            acc.normalize();
-            acc.mult(0.1f);
-            return acc;
+            return new PVector(0f,0f);
         }
         return initialParticleAcceleration;
 
     }
 
-    public void setInitialParticleAcceleration(PVector initialParticleAcceleration) {
+    private void setInitialParticleAcceleration(PVector initialParticleAcceleration) {
         this.initialParticleAcceleration = initialParticleAcceleration;
     }
 
@@ -169,16 +159,10 @@ class Emitter2D {
         this.particleLifetime = particleLifetime;
     }
 
-    /**
-     * Return the number of emitted particles per second
-     * or the parent's frame rate if emissionRate is undefined
-     * @return float {@link ParticleSystem.Emitter2D#emissionRate}
-     * <br></br>or the parent's frameRate
-     * @see processing.core.PApplet#frameRate
-     */
-    float getEmissionRate() {
-        if(emissionRate >= 0) return emissionRate;
-        else return parent.frameRate;
+
+    private float getEmissionRate() {
+        if(emissionRate > 0) return emissionRate;
+        else return 0f;
     }
 
     /**
@@ -220,11 +204,11 @@ class Emitter2D {
     }
 
     /**
-     * Returns a <b>copy</b> of the emitter's current position vector.
+     * Returns the emitter's current position vector.
      * @return  position vector
      */
     public PVector getEmitterPosition() {
-        return emitterPosition.get();
+        return emitterPosition;
     }
 
     /**
@@ -236,4 +220,59 @@ class Emitter2D {
         this.emitterPosition.x = x;
         this.emitterPosition.y = y;
     }
+
+    /**
+     * Returns the emission direction
+     * @return direction vector
+     */
+    private PVector getEmissionDirection() {
+        if (emissionDirection == null){
+            emissionDirection = new PVector(1,0);
+        }
+
+        // modify the direction based on the spread angle
+        if(emissionSpread != 0){
+            PVector modDirection = emissionDirection.get();
+            double theta = Math.atan2(modDirection.y, modDirection.x);
+            float rnd = parent.random(-emissionSpread, emissionSpread);
+            double rnd_theta = Math.toRadians((double) rnd);
+            modDirection = new PVector((float) Math.cos(theta+rnd_theta),(float) Math.sin(theta+rnd_theta));
+            modDirection.normalize();
+            return modDirection;
+        }
+
+        return emissionDirection;
+    }
+
+    /**
+     * Specify a direction in which the particles will be emitted
+     * @param emissionDirection direction vector
+     */
+    public void setEmissionDirection(PVector emissionDirection){
+        this.emissionDirection = emissionDirection;
+        this.emissionDirection.normalize();
+    }
+
+    /**
+     * Set a speed for particle emission.
+     * @param emissionSpeed speed at which the particles will be emitted
+     */
+    public void setEmissionSpeed(float emissionSpeed) {
+        this.emissionSpeed = emissionSpeed;
+    }
+
+    private float getEmissionSpeed() {
+        return emissionSpeed;
+    }
+
+    /**
+     * Controls how much variation will be applied to the emission direction
+     * @param emissionSpread maximum deviation from the emission direction in degrees
+     */
+    public void setEmissionSpread(float emissionSpread) {
+        if (emissionSpread < 0) this.emissionSpread = 0;
+        else if (emissionSpread > 180) this.emissionSpread = 180;
+        else this.emissionSpread = emissionSpread;
+    }
+
 }
