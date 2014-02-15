@@ -32,12 +32,12 @@ class Emitter2D {
     private static PApplet parent;
     private ArrayList<Particle2D> particles;
     private int currentFrame;
-    private float emissionRate; // particles per second
+    private float emissionRate;
     private PVector emissionDirection;
     private float emissionSpeed;
-    private float emissionAngle;
     private float emissionSpread;
     private PVector emitterPosition;
+    private float jitterRadius;
 
     public boolean showEmitter;
 
@@ -48,7 +48,7 @@ class Emitter2D {
     private PVector initialParticleAcceleration;
     private PVector initialParticleSize;
     private collisionMode boundaryCollisionMode;
-    private float particleLifetime; // in seconds - particle will live forever if this is null
+    private float particleLifetime;
 
 
     Emitter2D(PApplet p){
@@ -93,7 +93,7 @@ class Emitter2D {
 
 
 
-    void drawEmitterShape(){
+    private void drawEmitterShape(){
         parent.stroke(127);
         parent.noFill();
         parent.ellipse(getEmitterPosition().x, getEmitterPosition().y, 25, 25);
@@ -120,7 +120,17 @@ class Emitter2D {
     }
 
     private PVector getInitialParticlePosition() {
-        if (initialParticlePosition == null) return getEmitterPosition();
+        if (initialParticlePosition == null)
+            initialParticlePosition = getEmitterPosition();
+
+        // add jitter
+        if(jitterRadius != 0){
+            PVector vec = PVector.random2D();
+            vec.mult(jitterRadius);
+            vec.add(initialParticlePosition);
+            return vec;
+        }
+
         return initialParticlePosition;
     }
 
@@ -130,11 +140,11 @@ class Emitter2D {
     }
 
     private PVector getInitialParticleVelocity() {
-            PVector vel;
-            vel = getEmissionDirection();
-            vel.setMag(getEmissionSpeed());
-            initialParticleVelocity = vel;
-            return initialParticleVelocity;
+        PVector vel;
+        vel = getEmissionDirection();
+        vel.setMag(getEmissionSpeed());
+        initialParticleVelocity = vel;
+        return initialParticleVelocity;
     }
 
 
@@ -273,6 +283,10 @@ class Emitter2D {
         if (emissionSpread < 0) this.emissionSpread = 0;
         else if (emissionSpread > 180) this.emissionSpread = 180;
         else this.emissionSpread = emissionSpread;
+    }
+
+    public void setJitterRadius(float radius){
+        jitterRadius = radius;
     }
 
 }
