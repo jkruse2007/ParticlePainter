@@ -28,8 +28,8 @@ public class MainWindow extends PApplet {
         //emitter.setEmissionDirection(angle2Vector(0));
         emitter.setEmissionSpeed(0.5f);
         emitter.setEmissionSpread(30);
-        emitter.setJitterRadius(3);
-        emitter.setInitialParticleSize(6,6);
+        emitter.setJitter(4);
+        emitter.setInitialParticleSize(4,4);
         emitter.setBoundaryCollisionMode(collisionMode.DIE);
     }
 

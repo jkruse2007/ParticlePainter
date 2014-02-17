@@ -37,7 +37,7 @@ class Emitter2D {
     private float emissionSpeed;
     private float emissionSpread;
     private PVector emitterPosition;
-    private float jitterRadius;
+    private PVector jitter;
 
     public boolean showEmitter;
 
@@ -57,7 +57,6 @@ class Emitter2D {
         showEmitter = false;
         emitterPosition = new PVector(parent.width/2,parent.height/2);
     }
-
 
     // maintain an array of particles for each frame
     private void populateArray(){
@@ -91,14 +90,6 @@ class Emitter2D {
         }
     }
 
-
-
-    private void drawEmitterShape(){
-        parent.stroke(127);
-        parent.noFill();
-        parent.ellipse(getEmitterPosition().x, getEmitterPosition().y, 25, 25);
-    }
-
     /** Update the particle system's state */
     public void update(){
         populateArray();
@@ -113,6 +104,12 @@ class Emitter2D {
         for (Particle2D particle : particles) particle.draw();
     }
 
+    private void drawEmitterShape(){
+        parent.stroke(127);
+        parent.noFill();
+        parent.ellipse(getEmitterPosition().x, getEmitterPosition().y, 25, 25);
+    }
+
     private void removeDeadParticles() {
         for(ListIterator<Particle2D> it = particles.listIterator(); it.hasNext();) {
             if (!it.next().isAlive) it.remove();
@@ -124,16 +121,16 @@ class Emitter2D {
             initialParticlePosition = getEmitterPosition();
 
         // add jitter
-        if(jitterRadius != 0){
+        if(getJitter().mag() != 0){
             PVector vec = PVector.random2D();
-            vec.mult(jitterRadius);
-            vec.add(initialParticlePosition);
+            vec.x *= parent.random(getJitter().x);
+            vec.y *= parent.random(getJitter().y);
+            vec = PVector.add(initialParticlePosition.get(), vec);
             return vec;
         }
 
         return initialParticlePosition;
     }
-
 
     private void setInitialParticlePosition(PVector initialParticlePosition) {
             this.initialParticlePosition = initialParticlePosition;
@@ -147,6 +144,63 @@ class Emitter2D {
         return initialParticleVelocity;
     }
 
+//    public void setInitialParticleVelocity(PVector initialParticleVelocity){
+//        this.initialParticleVelocity = initialParticleVelocity;
+//    }
+
+    /**
+     * Returns the emission direction
+     * @return direction vector
+     */
+    private PVector getEmissionDirection() {
+        if (emissionDirection == null){
+            emissionDirection = new PVector(1,0);
+        }
+
+        // modify the direction based on the spread angle
+        if(emissionSpread != 0){
+            PVector modDirection = emissionDirection.get();
+            double theta = Math.atan2(modDirection.y, modDirection.x);
+            float rnd = parent.random(-emissionSpread, emissionSpread);
+            double rnd_theta = Math.toRadians((double) rnd);
+            modDirection = new PVector((float) Math.cos(theta+rnd_theta),(float) Math.sin(theta+rnd_theta));
+            modDirection.normalize();
+            return modDirection;
+        }
+
+        return emissionDirection;
+    }
+
+    /**
+     * Specify a direction in which the particles will be emitted
+     * @param emissionDirection direction vector
+     */
+    public void setEmissionDirection(PVector emissionDirection){
+        this.emissionDirection = emissionDirection;
+        this.emissionDirection.normalize();
+    }
+
+    private float getEmissionSpeed() {
+        return emissionSpeed;
+    }
+
+    /**
+     * Set a speed for particle emission.
+     * @param emissionSpeed speed at which the particles will be emitted
+     */
+    public void setEmissionSpeed(float emissionSpeed) {
+        this.emissionSpeed = emissionSpeed;
+    }
+
+    /**
+     * Controls how much variation will be applied to the emission direction
+     * @param emissionSpread maximum deviation from the emission direction in degrees
+     */
+    public void setEmissionSpread(float emissionSpread) {
+        if (emissionSpread < 0) this.emissionSpread = 0;
+        else if (emissionSpread > 180) this.emissionSpread = 180;
+        else this.emissionSpread = emissionSpread;
+    }
 
     private PVector getInitialParticleAcceleration() {
         if (initialParticleAcceleration == null){
@@ -169,7 +223,6 @@ class Emitter2D {
         this.particleLifetime = particleLifetime;
     }
 
-
     private float getEmissionRate() {
         if(emissionRate > 0) return emissionRate;
         else return 0f;
@@ -183,7 +236,6 @@ class Emitter2D {
         if (emissionRate < 0) this.emissionRate = 0;
         else this.emissionRate = emissionRate;
     }
-
 
     private collisionMode getBoundaryCollisionMode() {
         if (boundaryCollisionMode != null) return boundaryCollisionMode;
@@ -232,61 +284,23 @@ class Emitter2D {
     }
 
     /**
-     * Returns the emission direction
-     * @return direction vector
+     * Add a random offset to each particle's initial position
+     * @param jitterRadius maximum jitter radius
      */
-    private PVector getEmissionDirection() {
-        if (emissionDirection == null){
-            emissionDirection = new PVector(1,0);
-        }
-
-        // modify the direction based on the spread angle
-        if(emissionSpread != 0){
-            PVector modDirection = emissionDirection.get();
-            double theta = Math.atan2(modDirection.y, modDirection.x);
-            float rnd = parent.random(-emissionSpread, emissionSpread);
-            double rnd_theta = Math.toRadians((double) rnd);
-            modDirection = new PVector((float) Math.cos(theta+rnd_theta),(float) Math.sin(theta+rnd_theta));
-            modDirection.normalize();
-            return modDirection;
-        }
-
-        return emissionDirection;
+    public void setJitter(float jitterRadius){
+        this.jitter = new PVector(jitterRadius, jitterRadius);
     }
 
     /**
-     * Specify a direction in which the particles will be emitted
-     * @param emissionDirection direction vector
+     * Add a random offset to each particle's initial position
+     * @param x maximum amount of jitter in x
+     * @param y maximum amount of jitter in y
      */
-    public void setEmissionDirection(PVector emissionDirection){
-        this.emissionDirection = emissionDirection;
-        this.emissionDirection.normalize();
+    public void setJitter(float x, float y){
+        this.jitter = new PVector(x, y);
     }
 
-    /**
-     * Set a speed for particle emission.
-     * @param emissionSpeed speed at which the particles will be emitted
-     */
-    public void setEmissionSpeed(float emissionSpeed) {
-        this.emissionSpeed = emissionSpeed;
+    private PVector getJitter(){
+        return jitter;
     }
-
-    private float getEmissionSpeed() {
-        return emissionSpeed;
-    }
-
-    /**
-     * Controls how much variation will be applied to the emission direction
-     * @param emissionSpread maximum deviation from the emission direction in degrees
-     */
-    public void setEmissionSpread(float emissionSpread) {
-        if (emissionSpread < 0) this.emissionSpread = 0;
-        else if (emissionSpread > 180) this.emissionSpread = 180;
-        else this.emissionSpread = emissionSpread;
-    }
-
-    public void setJitterRadius(float radius){
-        jitterRadius = radius;
-    }
-
 }
